@@ -2,30 +2,32 @@
 
 # This script runs "git pull" is each directoy residing in its parent directory (default) or in the given directory
 
-read -p "Enter absolute path to directory (Current: $(pwd)): " target_directory
-if [ "$target_directory" != "" ]; then
-    if ! [ -d $target_directory ]; then
-        echo "$target_directory is not a valid directory"
-        exit
-    fi
-else
-    target_directory=$(pwd)
+env_file_location="./.env"
+if [ -f "$env_file_location" ]; then # set ENV varaibles from .env file if it exists
+    set -o allexport
+    source $env_file_location
+    set +o allexport
 fi
 
-read -p "Enter branch name (Default: master): " branch_to_pull
-if [ "$branch_to_pull" == "" ]; then
-    branch_to_pull="master"
+default_target_directory="${GIT_PULL_BULK_TARGET_DIR:-$(pwd)}"
+default_branch_to_pull="${GIT_PULL_BULK_BRANCH_TO_PULL:-master}"
+default_checkout_to_pulled_branch="${GIT_PULL_BULK_CHECKOUT_TO_PULLED_BRANCH:-n}"
+
+read -p "Enter absolute path to directory (Default: $default_target_directory): " target_directory
+target_directory="${target_directory:-$default_target_directory}"
+if ! [ -d $target_directory ]; then
+    echo "$target_directory is not a valid directory"
+    exit
 fi
 
-read -p "Checkout to pulled branch (y/n) (Default: n): " checkout_to_pulled_branch
-if [ "$checkout_to_pulled_branch" != "" ]; then
-    checkout_to_pulled_branch="${checkout_to_pulled_branch,,}"
-    if [ "$checkout_to_pulled_branch" != "n" ] && [ "$checkout_to_pulled_branch" != "y" ]; then
-        echo "Invalid input"
-        exit
-    fi
-else
-    checkout_to_pulled_branch="n"
+read -p "Enter branch name (Default: $default_branch_to_pull): " branch_to_pull
+branch_to_pull="${branch_to_pull:-$default_branch_to_pull}"
+
+read -p "Checkout to pulled branch (y/n) (Default: $default_checkout_to_pulled_branch): " checkout_to_pulled_branch
+checkout_to_pulled_branch="${checkout_to_pulled_branch:-$default_checkout_to_pulled_branch}"
+if [ "$checkout_to_pulled_branch" != "n" ] && [ "$checkout_to_pulled_branch" != "y" ]; then
+    echo "Invalid input"
+    exit
 fi
 
 echo "Target directory: $target_directory"
