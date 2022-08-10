@@ -14,7 +14,7 @@ fi
 
 read -p "Enter branch name (Default: master): " branch_to_pull
 if [ "$branch_to_pull" == "" ]; then
-    branch_to_pull="main"
+    branch_to_pull="master"
 fi
 
 read -p "Checkout to pulled branch (y/n) (Default: n): " checkout_to_pulled_branch
