@@ -9,9 +9,10 @@ if [ -f "$env_file_location" ]; then # set ENV varaibles from .env file if it ex
     set +o allexport
 fi
 
-default_target_directory="${GIT_PULL_BULK_TARGET_DIR:-$(pwd)}"
-default_branch_to_pull="${GIT_PULL_BULK_BRANCH_TO_PULL:-master}"
-default_checkout_to_pulled_branch="${GIT_PULL_BULK_CHECKOUT_TO_PULLED_BRANCH:-n}"
+default_target_directory="${BULK_GIT_TARGET_DIR:-$(pwd)}"
+default_branch_to_pull="${BULK_GIT_BRANCH_TO_PULL:-master}"
+default_checkout_to_pulled_branch="${BULK_GIT_CHECKOUT_TO_PULLED_BRANCH:-n}"
+default_clear_proxy="${BULK_GIT_CLEAR_PROXY:-n}"
 
 read -p "Enter absolute path to directory (Default: $default_target_directory): " target_directory
 target_directory="${target_directory:-$default_target_directory}"
@@ -30,9 +31,22 @@ if [ "$checkout_to_pulled_branch" != "n" ] && [ "$checkout_to_pulled_branch" != 
     exit
 fi
 
+read -p "Clear proxy (y/n) (Default: $default_clear_proxy): " clear_proxy
+clear_proxy="${clear_proxy:-$default_clear_proxy}"
+if [ "$clear_proxy" != "n" ] && [ "$clear_proxy" != "y" ]; then
+    echo "Invalid input"
+    exit
+fi
+
 echo "Target directory: $target_directory"
 echo "Branch to pull: $branch_to_pull"
 echo "Checkout to pulled branch: $checkout_to_pulled_branch"
+echo "Clear proxy: $clear_proxy"
+
+if [ "$clear_proxy" == "y" ]; then
+    unset HTTPS_PROXY https_proxy HTTP_PROXY http_proxy NO_PROXY no_proxy
+    echo "Cleared proxy"
+fi
 
 for folder in $(ls -d $target_directory/*/); do # iterate over each directory
     pushd $folder &> /dev/null # change present working directory
