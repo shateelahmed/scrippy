@@ -57,7 +57,7 @@ for folder in $(ls -d $target_directory/*/); do # iterate over each directory
     fi
 
     if [ ! -z "$exists" ]; then
-        if [ -z $found ]; then
+        if [ -z "$found" ]; then
             found="y"
         fi
         echo "$exists: $folder" # display folder name
@@ -66,6 +66,6 @@ for folder in $(ls -d $target_directory/*/); do # iterate over each directory
     popd &> /dev/null
 done
 
-if [ -z $found ]; then
+if [ -z "$found" ]; then
     echo "Branch not found in any repo"
 fi
