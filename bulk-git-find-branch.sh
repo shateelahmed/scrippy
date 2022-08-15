@@ -58,7 +58,7 @@ for folder in $(ls -d $target_directory/*/); do # iterate over each directory
 
     if [ ! -z "$exists" ]; then
         if [ -z $found ]; then
-            $found="y"
+            found="y"
         fi
         echo "$exists: $folder" # display folder name
     fi
