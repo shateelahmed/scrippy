@@ -55,7 +55,8 @@ found="" # flag to check if branch is found in any folder of the $target_directo
 for folder in $(ls -d $target_directory/*/); do # iterate over each directory
     pushd $folder &> /dev/null # change present working directory
     exists="" # flag to check if branch exists locally and/or remotely
-    deleted=""
+    deleted="" # flag to check if branch exists locally and/or remotely
+    could_not_delete_local_branch=""
     if [ -d .git ]; then # check if current folder is a git repo
         if git show-ref --quiet --heads $branch_to_delete; then # Check if branch exists locally
             exists+="local"
@@ -66,6 +67,7 @@ for folder in $(ls -d $target_directory/*/); do # iterate over each directory
                 current_branch=$(git branch --show-current)
             fi
             if [ "$current_branch" == "$branch_to_delete" ]; then  # if the current git branch is "$branch_to_delete"
+                could_not_delete_local_branch="y"
                 echo "Could not checkout to default branch in $folder. skipping..."
             else
                 git branch -D $branch_to_delete
@@ -73,7 +75,7 @@ for folder in $(ls -d $target_directory/*/); do # iterate over each directory
             fi
         fi
 
-        if [ "$delete_remote_branch" == "y" ] && [ ! -z "$deleted" ]; then
+        if [ "$delete_remote_branch" == "y" ] && [ -z "$could_not_delete_local_branch" ]; then
             git ls-remote --exit-code --heads origin $branch_to_delete &> /dev/null # check if remote branch exists and set exit code to status variable "$?"
             exit_code="$?"
             if [ "$exit_code" == "0" ]; then # 0 = exists, 2 = does not exist
