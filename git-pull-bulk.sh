@@ -10,7 +10,7 @@ if [ -f "$env_file_location" ]; then # set ENV varaibles from .env file if it ex
 fi
 
 default_target_directory="${BULK_GIT_TARGET_DIR:-$(pwd)}"
-default_branch_to_pull="${BULK_GIT_BRANCH_TO_PULL:-master}"
+default_branch_to_pull="${BULK_GIT_DEFAULT_BRANCH:-master}"
 default_checkout_to_pulled_branch="${BULK_GIT_CHECKOUT_TO_PULLED_BRANCH:-n}"
 default_clear_proxy="${BULK_GIT_CLEAR_PROXY:-n}"
 
