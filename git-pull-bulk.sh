@@ -52,7 +52,7 @@ for folder in $(ls -d $target_directory/*/); do # iterate over each directory
     pushd $folder &> /dev/null # change present working directory
     if [ -d .git ]; then # check if current folder is a git repo
         # echo $folder
-        git ls-remote --exit-code --head origin $branch_to_pull &> /dev/null # check if remote branch exists and set exit code to status variable "$?"
+        git ls-remote --exit-code --heads origin $branch_to_pull &> /dev/null # check if remote branch exists and set exit code to status variable "$?"
         exit_code="$?"
         if [ "$exit_code" == "0" ]; then # 0 = exists, 2 = does not exist
             echo "Working directory in $folder" # display folder name
