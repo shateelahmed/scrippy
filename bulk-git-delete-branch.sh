@@ -50,6 +50,11 @@ echo "Branch to delete: $branch_to_delete"
 echo "Clear proxy: $clear_proxy"
 echo "Delete remote branch: $delete_remote_branch"
 
+if [ "$clear_proxy" == "y" ]; then
+    unset HTTPS_PROXY https_proxy HTTP_PROXY http_proxy NO_PROXY no_proxy
+    echo "Cleared proxy"
+fi
+
 found="" # flag to check if branch is found in any folder of the $target_directory
 
 for folder in $(ls -d $target_directory/*/); do # iterate over each directory
