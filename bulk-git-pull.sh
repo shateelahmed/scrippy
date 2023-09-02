@@ -22,7 +22,7 @@ if ! [ -d $target_directory ]; then
     exit
 fi
 
-read -p "Enter branch name (Default: $default_branch_to_pull): " branch_to_pull
+read -p "Branch to pull (Default: $default_branch_to_pull): " branch_to_pull
 branch_to_pull="${branch_to_pull:-$default_branch_to_pull}"
 
 read -p "Checkout to pulled branch (y/n) (Default: $default_checkout_to_pulled_branch): " checkout_to_pulled_branch
