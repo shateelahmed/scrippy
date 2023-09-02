@@ -2,19 +2,20 @@
 
 # This script runs "git pull" is each directoy residing in its parent directory (default) or in the given directory
 
-env_file_location="./.env"
+script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
+env_file_location="$script_location/.env"
 if [ -f "$env_file_location" ]; then # set ENV varaibles from .env file if it exists
     set -o allexport
     source $env_file_location
     set +o allexport
 fi
 
-default_target_directory="${BULK_GIT_TARGET_DIR:-$(pwd)}"
+default_target_directory="${BULK_GIT_TARGET_DIR}"
 default_branch_to_pull="${BULK_GIT_DEFAULT_BRANCH:-master}"
 default_checkout_to_pulled_branch="${BULK_GIT_CHECKOUT_TO_PULLED_BRANCH:-n}"
 default_clear_proxy="${BULK_GIT_CLEAR_PROXY:-n}"
 
-read -p "Enter absolute path to directory (Default: $default_target_directory): " target_directory
+read -p "Enter absolute path to directory (Default: ${default_target_directory:-"Not set"}): " target_directory
 target_directory="${target_directory:-$default_target_directory}"
 if ! [ -d $target_directory ]; then
     echo "$target_directory is not a valid directory"
