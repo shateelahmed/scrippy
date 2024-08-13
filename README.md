@@ -10,6 +10,7 @@ Checkout the following scenario. You have a project `amazing` that contains 10 m
 - Checkout to a specific Git branch
 - Pull a specific Git branch
 - Delete a specific Git branch
+- List all currently checked out branches
 
 ## Installation
 - Clone the repository.
