@@ -5,16 +5,9 @@
 script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 
 source $script_location/load-env.sh
+source $script_location/target-directory.sh
 
-default_target_directory="${BULK_GIT_TARGET_DIR}"
 default_clear_proxy="${BULK_GIT_CLEAR_PROXY:-n}"
-
-read -p "Enter absolute path to directory (Default: ${default_target_directory:-"Not set"}): " target_directory
-target_directory="${target_directory:-$default_target_directory}"
-if ! [ -d $target_directory ]; then
-    echo "$target_directory is not a valid directory"
-    exit
-fi
 
 read -p "Branch to find: " branch_to_find
 if [ -z "$branch_to_find" ]; then

@@ -3,15 +3,7 @@
 script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 
 source $script_location/load-env.sh
-
-default_target_directory="${BULK_GIT_TARGET_DIR}"
-
-read -p "Enter absolute path to directory (Default: ${default_target_directory:-"Not set"}): " target_directory
-target_directory="${target_directory:-$default_target_directory}"
-if ! [ -d $target_directory ]; then
-    echo "$target_directory is not a valid directory"
-    exit
-fi
+source $script_location/target-directory.sh
 
 # Function to check if a directory is a Git repository
 is_git_repo() {
