@@ -7,7 +7,7 @@ script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 source $script_location/load-env.sh
 source $script_location/target-directory.sh
 
-read -p "Branch to checkout: " branch_to_checkout
+branch_to_checkout="$1" # $1 contains the first command line argument passed to the script
 if [ -z "$branch_to_checkout" ]; then
     echo "Branch name is required"
     exit

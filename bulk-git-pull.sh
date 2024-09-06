@@ -7,12 +7,14 @@ script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 source $script_location/load-env.sh
 source $script_location/target-directory.sh
 
-default_branch_to_pull="${BULK_GIT_DEFAULT_BRANCH:-master}"
 default_checkout_to_pulled_branch="${BULK_GIT_CHECKOUT_TO_PULLED_BRANCH:-n}"
 default_clear_proxy="${BULK_GIT_CLEAR_PROXY:-n}"
 
-read -p "Branch to pull (Default: $default_branch_to_pull): " branch_to_pull
-branch_to_pull="${branch_to_pull:-$default_branch_to_pull}"
+branch_to_pull="$1" # $1 contains the first command line argument passed to the script
+if [ -z "$branch_to_pull" ]; then
+    echo "Branch name is required"
+    exit
+fi
 
 read -p "Checkout to pulled branch (y/n) (Default: $default_checkout_to_pulled_branch): " checkout_to_pulled_branch
 checkout_to_pulled_branch="${checkout_to_pulled_branch:-$default_checkout_to_pulled_branch}"

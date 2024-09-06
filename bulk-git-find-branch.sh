@@ -9,7 +9,7 @@ source $script_location/target-directory.sh
 
 default_clear_proxy="${BULK_GIT_CLEAR_PROXY:-n}"
 
-read -p "Branch to find: " branch_to_find
+branch_to_find="$1" # $1 contains the first command line argument passed to the script
 if [ -z "$branch_to_find" ]; then
     echo "Branch name is required"
     exit

@@ -10,7 +10,7 @@ source $script_location/target-directory.sh
 default_clear_proxy="${BULK_GIT_CLEAR_PROXY:-n}"
 default_delete_remote_branch="${BULK_GIT_DELETE_REMOTE_BRANCH:-n}"
 
-read -p "Branch to delete: " branch_to_delete
+branch_to_delete="$1" # $1 contains the first command line argument passed to the script
 if [ -z "$branch_to_delete" ]; then
     echo "Branch name is required"
     exit
