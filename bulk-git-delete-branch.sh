@@ -8,8 +8,6 @@ source $script_location/load-env.sh
 source $script_location/target-directory.sh
 source $script_location/args.sh
 
-default_clear_proxy="${BULK_GIT_CLEAR_PROXY:-n}"
-
 required_number_of_arguments=1
 provided_number_of_arguments=${#arguments[@]}
 if [ "$provided_number_of_arguments" != 1 ]; then
@@ -41,22 +39,11 @@ if ! $delete_remote_branch; then
     done
 fi
 
-read -p "Clear proxy (y/n) (Default: $default_clear_proxy): " clear_proxy
-clear_proxy="${clear_proxy:-$default_clear_proxy}"
-if [ "$clear_proxy" != "n" ] && [ "$clear_proxy" != "y" ]; then
-    echo "Invalid input"
-    exit
-fi
-
 echo "Target directory: $target_directory"
 echo "Branch to delete: $branch_to_delete"
-echo "Clear proxy: $clear_proxy"
 echo "Delete remote branch: $delete_remote_branch"
 
-if [ "$clear_proxy" == "y" ]; then
-    unset HTTPS_PROXY https_proxy HTTP_PROXY http_proxy NO_PROXY no_proxy
-    echo "Cleared proxy"
-fi
+source $script_location/clear-proxy.sh
 
 found="" # flag to check if branch is found in any folder of the $target_directory
 

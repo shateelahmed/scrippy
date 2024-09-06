@@ -7,29 +7,16 @@ script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 source $script_location/load-env.sh
 source $script_location/target-directory.sh
 
-default_clear_proxy="${BULK_GIT_CLEAR_PROXY:-n}"
-
 branch_to_find="$1" # $1 contains the first command line argument passed to the script
 if [ -z "$branch_to_find" ]; then
     echo "Branch name is required"
     exit
 fi
 
-read -p "Clear proxy (y/n) (Default: $default_clear_proxy): " clear_proxy
-clear_proxy="${clear_proxy:-$default_clear_proxy}"
-if [ "$clear_proxy" != "n" ] && [ "$clear_proxy" != "y" ]; then
-    echo "Invalid input"
-    exit
-fi
-
 echo "Target directory: $target_directory"
 echo "Branch to find: $branch_to_find"
-echo "Clear proxy: $clear_proxy"
 
-if [ "$clear_proxy" == "y" ]; then
-    unset HTTPS_PROXY https_proxy HTTP_PROXY http_proxy NO_PROXY no_proxy
-    echo "Cleared proxy"
-fi
+source $script_location/clear-proxy.sh
 
 found="" # flag to check if branch is found in any folder of the $target_directory
 

@@ -8,7 +8,6 @@ source $script_location/load-env.sh
 source $script_location/target-directory.sh
 
 default_checkout_to_pulled_branch="${BULK_GIT_CHECKOUT_TO_PULLED_BRANCH:-n}"
-default_clear_proxy="${BULK_GIT_CLEAR_PROXY:-n}"
 
 branch_to_pull="$1" # $1 contains the first command line argument passed to the script
 if [ -z "$branch_to_pull" ]; then
@@ -23,22 +22,11 @@ if [ "$checkout_to_pulled_branch" != "n" ] && [ "$checkout_to_pulled_branch" != 
     exit
 fi
 
-read -p "Clear proxy (y/n) (Default: $default_clear_proxy): " clear_proxy
-clear_proxy="${clear_proxy:-$default_clear_proxy}"
-if [ "$clear_proxy" != "n" ] && [ "$clear_proxy" != "y" ]; then
-    echo "Invalid input"
-    exit
-fi
-
 echo "Target directory: $target_directory"
 echo "Branch to pull: $branch_to_pull"
 echo "Checkout to pulled branch: $checkout_to_pulled_branch"
-echo "Clear proxy: $clear_proxy"
 
-if [ "$clear_proxy" == "y" ]; then
-    unset HTTPS_PROXY https_proxy HTTP_PROXY http_proxy NO_PROXY no_proxy
-    echo "Cleared proxy"
-fi
+source $script_location/clear-proxy.sh
 
 for folder in $(ls -d $target_directory/*/); do # iterate over each directory
     pushd $folder &> /dev/null # change present working directory
