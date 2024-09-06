@@ -3,12 +3,8 @@
 # This script checks out to a specific local branch in all directories
 
 script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
-env_file_location="$script_location/.env"
-if [ -f "$env_file_location" ]; then # set ENV varaibles from .env file if it exists
-    set -o allexport
-    source $env_file_location
-    set +o allexport
-fi
+
+source $script_location/load-env.sh
 
 default_target_directory="${BULK_GIT_TARGET_DIR}"
 
