@@ -6,8 +6,16 @@ script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 
 source $script_location/load-env.sh
 source $script_location/target-directory.sh
+source $script_location/args.sh
 
-branch_to_find="$1" # $1 contains the first command line argument passed to the script
+required_number_of_arguments=1
+provided_number_of_arguments=${#arguments[@]}
+if [ "$provided_number_of_arguments" != 1 ]; then
+    echo "$required_number_of_arguments branch name required. $provided_number_of_arguments provided"
+    exit
+fi
+
+branch_to_find="${arguments[0]}"
 if [ -z "$branch_to_find" ]; then
     echo "Branch name is required"
     exit
