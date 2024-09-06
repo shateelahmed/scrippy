@@ -6,26 +6,39 @@ script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 
 source $script_location/load-env.sh
 source $script_location/target-directory.sh
+source $script_location/args.sh
 
 default_clear_proxy="${BULK_GIT_CLEAR_PROXY:-n}"
-default_delete_remote_branch="${BULK_GIT_DELETE_REMOTE_BRANCH:-n}"
 
-branch_to_delete="$1" # $1 contains the first command line argument passed to the script
-if [ -z "$branch_to_delete" ]; then
-    echo "Branch name is required"
+required_number_of_arguments=1
+provided_number_of_arguments=${#arguments[@]}
+if [ "$provided_number_of_arguments" != 1 ]; then
+    echo "$required_number_of_arguments branch name required. $provided_number_of_arguments provided"
     exit
-else
-    if [ "$branch_to_delete" == "${BULK_GIT_DEFAULT_BRANCH}" ]; then
-        echo "Default branch cannot be deleted"
-        exit
-    fi
 fi
 
-read -p "Delete remote branch (y/n) (Default: $default_delete_remote_branch): " delete_remote_branch
-delete_remote_branch="${delete_remote_branch:-$default_delete_remote_branch}"
-if [ "$delete_remote_branch" != "n" ] && [ "$delete_remote_branch" != "y" ]; then
-    echo "Invalid input"
+branch_to_delete="${arguments[0]}"
+if [ "$branch_to_delete" == "${BULK_GIT_DEFAULT_BRANCH}" ]; then
+    echo "Default branch cannot be deleted"
     exit
+fi
+
+delete_remote_branch=false
+
+# Loop through the array
+for flag in "${short_flags[@]}"; do
+    if [ "$flag" == "-r" ]; then
+        delete_remote_branch=true
+        break
+    fi
+done
+if ! $delete_remote_branch; then
+    for flag in "${long_flags[@]}"; do
+        if [ "$flag" == "--remote" ]; then
+            delete_remote_branch=true
+            break
+        fi
+    done
 fi
 
 read -p "Clear proxy (y/n) (Default: $default_clear_proxy): " clear_proxy
@@ -70,7 +83,7 @@ for folder in $(ls -d $target_directory/*/); do # iterate over each directory
             fi
         fi
 
-        if [ "$delete_remote_branch" == "y" ] && [ -z "$could_not_delete_local_branch" ]; then
+        if $delete_remote_branch && [ -z "$could_not_delete_local_branch" ]; then
             git ls-remote --exit-code --heads origin $branch_to_delete &> /dev/null # check if remote branch exists and set exit code to status variable "$?"
             exit_code="$?"
             if [ "$exit_code" == "0" ]; then # 0 = exists, 2 = does not exist
