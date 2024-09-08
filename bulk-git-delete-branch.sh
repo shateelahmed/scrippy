@@ -1,46 +1,71 @@
 #!/bin/bash
 
-# Find a branch in remote and local repository
+# Delete a branch in all directories and optionally delete the remote branch as well
 
 script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 
-source $script_location/load-env.sh
-source $script_location/target-directory.sh
-source $script_location/args.sh
+# Convert long options to short ones
+for arg in "$@"; do
+    shift
+    case "$arg" in
+    "--directory")
+        set -- "$@" "-d" # Convert --directory to -d
+        ;;
+    "--clear-proxy")
+        set -- "$@" "-c" # Convert --clear-proxy to -c
+        ;;
+    "--delete-remote-branch")
+        set -- "$@" "-r" # Convert --delete-remote-branch to -r
+        ;;
+    *)
+        set -- "$@" "$arg"
+        ;; # Pass through the original argument if no match
+    esac
+done
 
-required_number_of_arguments=1
-provided_number_of_arguments=${#arguments[@]}
-if [ "$provided_number_of_arguments" != 1 ]; then
-    echo "$required_number_of_arguments branch name required. $provided_number_of_arguments provided"
-    exit
-fi
-
-branch_to_delete="${arguments[0]}"
-if [ "$branch_to_delete" == "${BULK_GIT_DEFAULT_BRANCH}" ]; then
-    echo "Default branch cannot be deleted"
-    exit
-fi
-
+clear_proxy=false
 delete_remote_branch=false
 
-# Loop through the array
-for flag in "${short_flags[@]}"; do
-    if [ "$flag" == "-r" ]; then
+# Use getopts for short options
+while getopts "d:cr" opt; do
+    case $opt in
+    d)
+        # echo "Flag -d or --directory was triggered, Parameter: $OPTARG"
+        target_directory="$OPTARG"
+        ;;
+    c)
+        clear_proxy=true
+        ;;
+    r)
         delete_remote_branch=true
-        break
-    fi
+        ;;
+    # \?)
+    #     echo "Invalid option: -$OPTARG"
+    #     ;;
+    esac
 done
-if ! $delete_remote_branch; then
-    for flag in "${long_flags[@]}"; do
-        if [ "$flag" == "--remote" ]; then
-            delete_remote_branch=true
-            break
-        fi
-    done
+
+# Shift off the options and flags, so only positional arguments remain
+shift $((OPTIND - 1))
+
+# Handle positional arguments (remaining after flags)
+arguments=("$@")
+required_number_of_arguments=1
+provided_number_of_arguments=${#arguments[@]}
+if [ "$provided_number_of_arguments" != "$required_number_of_arguments" ]; then
+    echo "$required_number_of_arguments argument required. $provided_number_of_arguments provided"
+    exit
 fi
+
+source $script_location/load-env.sh
+source $script_location/target-directory.sh
+source $script_location/verify-git-repo.sh
+
+branch_to_delete="${arguments[0]}"
 
 echo "Target directory: $target_directory"
 echo "Branch to delete: $branch_to_delete"
+echo "Clear proxy: $clear_proxy"
 echo "Delete remote branch: $delete_remote_branch"
 
 source $script_location/clear-proxy.sh
