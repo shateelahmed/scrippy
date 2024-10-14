@@ -8,10 +8,12 @@
 is_git_repo() {
     # $1 is the first argument passed to the function
     directory="$1"
-    # The -C option in the git command allows you to specify a different directory in which Git commands will be executed.
-    # >/dev/null: Redirects standard output (stdout) to /dev/null (essentially discarding it).
-    # 2>&1: Redirects stderr to stdout, which is already being discarded by /dev/null.
-    git -C "$directory" rev-parse --is-inside-work-tree >/dev/null 2>&1
-    # $? returns the exit status of the last executed command, which is 0 if the directory is a Git repository and non-zero otherwise.
-    return $?
+
+    if [ ! -d "$directory/.git" ]; then
+        # condition 1: current directory is not a git repo
+
+        return 1
+    fi
+
+    return 0;
 }
