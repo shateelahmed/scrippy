@@ -92,7 +92,7 @@ for child_directory in $(ls -d $target_directory/*/); do # iterate over each dir
 
         current_branch=$(git -C "$child_directory" branch --show-current)
         if [ "$current_branch" == "$branch_to_delete" ]; then  # if the current git branch is "$branch_to_delete"
-            git -C "$child_directory" checkout ${BULK_GIT_DEFAULT_BRANCH} &> /dev/null
+            git -C "$child_directory" checkout ${DEFAULT_BRANCH} &> /dev/null
             current_branch=$(git -C "$child_directory" branch --show-current)
         fi
         if [ "$current_branch" == "$branch_to_delete" ]; then  # if the current git branch is "$branch_to_delete"
