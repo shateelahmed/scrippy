@@ -16,6 +16,8 @@ Checkout the following scenario. You have a project `amazing` that contains 10 m
 - Clone the repository.
 - Copy the `.env.example` file to same directory as `.env`.
 - Update the envs to your need in the `.env` file.
+    - `TARGET_DIR`: Set absolute path to the directory where you want to run scrippy in by default.
+    - `DEFAULT_BRANCH`: Set default branch (eg. `master`, `main`) for your repository.
 - Make the `install.sh` file executable (`chmod +x <filename>.sh`).
 - Run `./install.sh` to install the scripts
 
