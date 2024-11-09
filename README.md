@@ -16,4 +16,15 @@ Checkout the following scenario. You have a project `amazing` that contains 10 m
 - Clone the repository.
 - Copy the `.env.example` file to same directory as `.env`.
 - Update the envs to your need in the `.env` file.
-- Make the `.sh` files executable (`chmod +x <filename>.sh`).
+- Make the `install.sh` file executable (`chmod +x <filename>.sh`).
+- Run `./install.sh` to install the scripts
+
+## Usage
+- Run `scrippy checkout <branch_name>` to checkout to a specific branch
+- Run `scrippy delete <branch_name>` to delete a branch locally. Add `-r` before the `<branch_name>` to delete the branch from remote.
+- Run `scrippy fetch` to do a fetch.
+- Run `scrippy find <branch_name>` to find a branch in local and remote.
+- Run `scrippy merge <source_branch> <destination_branch>` to merge a branch into another.
+- Run `scrippy pull <branch_name>` to pull a branch. The pull will always happen in the same branch.
+- Run `scrippy push <branch_name>` to push a branch. The push will always happen in the same branch.
+- Run `scrippy which` to list the branches that are currently checked out
