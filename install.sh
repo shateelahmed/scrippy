@@ -18,10 +18,10 @@ install_unix() {
 
     # Copy scripts to the install directory
     rsync -av --exclude '.git/' --exclude '.gitignore' . "$install_dir" # copy all files to the install directory
-    chmod +x "$install_dir"/scrippy-*.sh # Make the scrippy prefixed scripts executable
+    chmod +x "$install_dir"/scrippy*.sh # Make the scrippy prefixed scripts executable
 
     # for file in scrippy*.sh; do mv "$file" "scrippy${file#bulk-git}"; done
-    for file in "$install_dir"/scrippy-*.sh; do
+    for file in "$install_dir"/scrippy*.sh; do
         mv "$file" "${file%.sh}"
     done
 
