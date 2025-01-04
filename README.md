@@ -37,12 +37,12 @@ Checkout the following scenario. You have a project `amazing` that contains 10 m
 
 ## Example output
 
-**scrippy list**
+**scrippy list :**
 
-Description:
+<b>Description</b>:
 Lists all the available commands that Scrippy provides, along with a brief description of what each command does. It's a handy way to explore the functionalities of Scrippy and understand its capabilities.
 
-Output Example Explanation:
+<b>Output Example Explanation:</b>
 Displays a formatted list of commands and their descriptions, like scrippy-checkout for checking out to a specific branch or scrippy-pull for pulling updates from a remote branch.
 
     Available Commands and Descriptions:
@@ -58,11 +58,11 @@ Displays a formatted list of commands and their descriptions, like scrippy-check
 	   9. scrippy-push            Push changes to the remote repository
 	   10. scrippy-which          Check which branch you're currently on
 
-<br>**scrippy which**
-**Description:**
+<br>**scrippy which :**
+<br><b>Description:</b>
 Displays the current branch that each directory (microservice) is checked out to. This is particularly useful for keeping track of the branch status across multiple repositories.
 
-**Output Example Explanation:**
+<b>Output Example Explanation:</b>
 A table is shown with directories and the branches currently checked out in each directory. This helps you quickly understand the state of your microservices.
 
     +---------------------+----------------------------------------+
@@ -73,11 +73,11 @@ A table is shown with directories and the branches currently checked out in each
     | microservice2       | develop                                |
     +---------------------+----------------------------------------+```
 
- <br>**scrippy find <branch_name>**
-**Description:**
+<br>**scrippy find <branch_name> :**
+<br><b>Description:</b>
 Searches for a specific branch across all microservices. It indicates whether the branch exists locally, remotely, or not at all.
 
-**Output Example Explanation:**
+<b>Output Example Explanation:</b>
 The command highlights whether the specified branch (develop in this case) exists locally and/or remotely for each microservice directory.
 
     Target directory           : /home/users/Documents/application/dev
@@ -90,11 +90,11 @@ The command highlights whether the specified branch (develop in this case) exist
     | microservice2       |   ✔   |   ✘    |
     +---------------------+-------+--------+
 
-<br>**scrippy checkout <branch_name>**
-**Description:**
+<br><b>scrippy checkout <branch_name> :</b>
+<br><b>Description:</b>
 Switches the current branch to the specified branch (<branch_name>) in all microservices. If the branch is not found, it provides feedback for each directory.
 
-**Output Example Explanation:**
+<b>Output Example Explanation:</b>
 The command successfully checks out to the master branch in each microservice, indicating any changes or updates made during the process.
 
     ✔  Directory: microservice1
@@ -113,12 +113,12 @@ The command successfully checks out to the master branch in each microservice, i
 
 
 
-<br>**scrippy create-branch <source_branch> <target_branch> <microservice_name>**
-**Description:**
+<br>**scrippy create-branch <source_branch> <target_branch> <microservice_name> :**
+<br><b>Description:</b>
 Creates a new branch (<target_branch>) from an existing branch (<source_branch>) in the specified microservice(s). If no microservice is specified, it applies to all.
 <microservice_name> name is optional, if you not mentioned that it will be work for all directories
 
-**Output Example Explanation:**
+<b>Output Example Explanation:</b>
 A new branch release-1.0.1 is created from develop in microservice1. The output confirms the successful branch creation and switch.
 
     Target directory   : /home/users/Documents/application/dev
@@ -133,11 +133,11 @@ A new branch release-1.0.1 is created from develop in microservice1. The output 
          - status: Branch created and switched
 
 
-<br>**scrippy delete <branch_name>**
-**Description:**
+<br>**scrippy delete <branch_name>:**
+<br><b>Description:</b>
 Deletes the specified branch (<branch_name>) from the local repository. Add the -r flag to delete the branch from the remote repository as well.
 
-**Output Example Explanation:**
+<b>Output Example Explanation:</b>
 The branch release-1.0.1 is successfully deleted locally in microservice1, while the branch is not found in microservice2, resulting in partial success.
 
     Target directory           : /home/users/Documents/application/dev
@@ -155,11 +155,11 @@ The branch release-1.0.1 is successfully deleted locally in microservice1, while
             Branch release-1.0.1 not found in this directory.
         - Status: Branch delete failed
 
-<br>**scrippy fetch**
-**Description:**
+<br>**scrippy fetch:**
+<br><b>Description:</b>
 Fetches the latest changes from the remote repositories for all microservices. It doesn’t merge or rebase; it only updates the remote tracking branches.
 
-**Output Example Explanation:**
+<b>Output Example Explanation:</b>
 The command fetches updates for each microservice directory, indicating any new branches or changes fetched. If no changes are fetched, it notes that as well.
 
     Target directory: /home/users/Documents/application/dev
@@ -175,11 +175,11 @@ The command fetches updates for each microservice directory, indicating any new 
         - Status: fetching done
 
 
-<br>**scrippy merge <source_branch> <target_branch>**
-**Description:**
+<br>**scrippy merge <source_branch> <target_branch>:**
+<br><b>Description:</b>
 Merges changes from the source_branch into the target_branch in all microservices. If a branch doesn't exist or the merge fails, it provides detailed feedback.
 
-**Output Example Explanation:**
+<b>Output Example Explanation:</b>
 The command successfully merges release-4.1.0 into master for microservice1. However, the source branch does not exist in microservice2, causing the merge to fail there.
 
     Target directory   : /home/users/Documents/application/dev
@@ -199,11 +199,11 @@ The command successfully merges release-4.1.0 into master for microservice1. How
          - status: Failed to merge
 
 
-<br>**scrippy pull <branch_name>**
-**Description:**
+<br>**scrippy pull <branch_name>:**
+<br><b>Description:</b>
 Pulls updates for the specified branch (<branch_name>) from the remote repository in all microservices. It fails if there are uncommitted changes or other conflicts.
 
-**Output Example Explanation:**
+<b>Output Example Explanation:</b>
 The command successfully pulls updates for the master branch in microservice2. However, microservice1 has unstaged changes, causing the pull to fail.
         Target directory    : /home/users/Documents/application/dev
         Branch to pull      : master
