@@ -1,6 +1,5 @@
 #!/bin/bash
 script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")"
-echo $script_location
 for lib_file in "$script_location"/lib/*.sh; do
     source "$lib_file"
 done

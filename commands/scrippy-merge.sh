@@ -107,7 +107,7 @@ for child_directory in $(ls -d "$target_directory"/*/); do
     # Checkout the target branch
     current_branch=$(git -C "$child_directory" branch --show-current)
     if [ "$current_branch" != "$target_branch" ]; then
-        git -C "$child_directory" checkout "$target_branch"
+        checkout_output=$(git -C "$child_directory" checkout "$target_branch" 2>&1)
         current_branch=$(git -C "$child_directory" branch --show-current)
     fi
     if [ "$current_branch" != "$target_branch" ]; then
