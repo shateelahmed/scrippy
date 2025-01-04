@@ -85,7 +85,7 @@ done
 # Receive the arguments
 source_branch="$1"
 target_branch="$2"
-
+specific_directories="$3"
 # Display received arguments
 echo -e "Target directory   : ${green}$target_directory${reset}"
 echo -e "Source branch      : ${green}$source_branch${reset}"
@@ -98,9 +98,33 @@ while true; do
     spin
     sleep 0.1
 done &
+IFS=',' read -r -a directories_array <<< "$specific_directories"
 
 # Iterate over the provided directories
 for child_directory in $(ls -d "$target_directory"/*/); do
+
+    if [ -n "$specific_directories" ]; then
+        match=false
+        # Extract the actual directory name from the full path (basename)
+        child_dir_name=$(basename "$child_directory")
+
+        # Loop over the comma-separated list of directories
+        for dir in "${directories_array[@]}"; do
+            # Compare the directory name with the directory from the list
+            if [ "$child_dir_name" == "$dir" ]; then
+                match=true
+                break
+            fi
+        done
+
+        # If the directory doesn't match any from the list, continue to the next iteration
+        if [ "$match" = false ]; then
+            continue
+        fi
+    fi
+
+
+
     # Check if the directory exists
     if [ ! -d "$child_directory" ]; then
         show_status "$child_directory" "Directory does not exist" "${red}Failed to create branch" "✘"
