@@ -2,7 +2,7 @@
 
 # Delete a branch in all directories and optionally delete the remote branch as well
 
-script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
+script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")"
 
 # Convert long options to short ones
 for arg in "$@"; do
@@ -30,7 +30,6 @@ delete_remote_branch=false
 while getopts "d:cr" opt; do
     case $opt in
     d)
-        # echo "Flag -d or --directory was triggered, Parameter: $OPTARG"
         target_directory="$OPTARG"
         ;;
     c)
@@ -39,14 +38,12 @@ while getopts "d:cr" opt; do
     r)
         delete_remote_branch=true
         ;;
-    # \?)
-    #     echo "Invalid option: -$OPTARG"
-    #     ;;
     esac
 done
 
 # Shift off the options and flags, so only positional arguments remain
 shift $((OPTIND - 1))
+
 
 # Handle positional arguments (remaining after flags)
 arguments=("$@")
@@ -57,37 +54,53 @@ if [ "$provided_number_of_arguments" != "$required_number_of_arguments" ]; then
     exit
 fi
 
-source $script_location/load-env.sh
-source $script_location/target-directory.sh
-source $script_location/verify-git-repo.sh
-source $script_location/directory-name.sh
-source $script_location/terminal-color-codes.sh
+# Source library files
+for lib_file in "$script_location"/lib/*.sh; do
+    source "$lib_file"
+done
 
 branch_to_delete="${arguments[0]}"
 
-echo "Target directory: ${green}$target_directory${reset}"
-echo "Branch to delete: ${green}$branch_to_delete${reset}"
-echo "Clear proxy: ${green}$clear_proxy${reset}"
-echo "Delete remote branch: ${green}$delete_remote_branch${reset}"
+# Print formatted output
+echo -e "Target directory           : ${green}$target_directory${reset}"
+echo -e "Branch to delete           : ${green}$branch_to_delete${reset}"
+echo -e "Clear proxy                : ${green}$clear_proxy${reset}"
+echo -e "Delete remote branch       : ${green}$delete_remote_branch${reset}"
 
-source $script_location/clear-proxy.sh
 
-found="" # flag to check if branch is found in any child_directory of the $target_directory
+while true; do
+    spin
+    sleep 0.1
+done &
 
+# source $script_location/lib/clear-proxy.sh
+
+branch_found=false # Flag to track if the branch is found at all
+
+# Function to print the failure message
+print_failure_message() {
+    local dir_name="$1"
+    local reason="$2"
+    echo -e "\n✘ ${red}Directory: $dir_name${reset}" # Directory in red with ✘
+    echo "    - Changes:"
+    echo "        $reason"
+    echo "    - Status: ${red}Branch delete failed${reset}"
+}
+
+# Iterate over directories and check for the branch
 for child_directory in $(ls -d $target_directory/*/); do # iterate over each directory
     if [ ! -d "$child_directory/.git" ]; then
-        # condition 1: current child_directory is not a git repo
-
         continue
     fi
 
     child_directory_name=$(get_directory_name "$child_directory")
-    echo -e "\nWorking directory ${green}$child_directory_name${reset}" # display child_directory name
 
     exists="" # flag to check if branch exists locally and/or remotely
-    deleted="" # flag to check if branch exists locally and/or remotely
+    deleted="" # flag to check if branch is deleted locally and/or remotely
     could_not_delete_local_branch=""
-    if git -C "$child_directory" show-ref --quiet --heads $branch_to_delete; then # Check if branch exists locally
+
+    # Check if branch exists locally
+    if git -C "$child_directory" show-ref --quiet --heads $branch_to_delete; then
         exists+="local"
 
         current_branch=$(git -C "$child_directory" branch --show-current)
@@ -95,47 +108,58 @@ for child_directory in $(ls -d $target_directory/*/); do # iterate over each dir
             git -C "$child_directory" checkout ${DEFAULT_BRANCH} &> /dev/null
             current_branch=$(git -C "$child_directory" branch --show-current)
         fi
-        if [ "$current_branch" == "$branch_to_delete" ]; then  # if the current git branch is "$branch_to_delete"
+        if [ "$current_branch" == "$branch_to_delete" ]; then
+            # If the branch is the default branch, don't delete
+            print_failure_message "$child_directory_name" "Branch $branch_to_delete is the default branch and cannot be deleted."
             could_not_delete_local_branch="y"
-            echo "Could not checkout to default branch in $child_directory. skipping..."
-        else
-            git -C "$child_directory" branch -D $branch_to_delete
-            deleted+="local"
+            continue
         fi
+
+        # Delete local branch if not the default
+        git -C "$child_directory" branch -D "$branch_to_delete" &>/dev/null
+        deleted+="local"
     fi
 
+    # Check and delete remote branch if required
     if $delete_remote_branch && [ -z "$could_not_delete_local_branch" ]; then
-        git -C "$child_directory" ls-remote --exit-code --heads origin $branch_to_delete &> /dev/null # check if remote branch exists and set exit code to status variable "$?"
+        git_output=$(git -C "$child_directory" push origin --delete $branch_to_delete 2>&1)
         exit_code="$?"
-        if [ "$exit_code" == "0" ]; then # 0 = exists, 2 = does not exist
-            if [ ! -z "$exists" ]; then
-                exists+=" & "
-            fi
-            exists+="remote"
+
+        if [ "$exit_code" == "0" ]; then # Successfully deleted
+            exists+=" & remote"
 
             default_branch_in_remote=$(git -C "$child_directory" remote show origin | sed -n '/HEAD branch/s/.*: //p')
             if [ "$branch_to_delete" == "${default_branch_in_remote}" ]; then
-                echo "$branch_to_delete is the default branch in $child_directory. It cannot be deleted."
+                # Include the "branch is the default" message in the changes section
+                print_failure_message "$child_directory_name" "Branch $branch_to_delete is the default branch and cannot be deleted."
+                continue
             else
-                git -C "$child_directory" push origin --delete $branch_to_delete
                 if [ ! -z "$deleted" ]; then
                     deleted+=" & "
                 fi
                 deleted+="remote"
-            fi
-        fi
-    fi
 
-    if [ ! -z "$exists" ]; then
-        if [ -z "$found" ]; then
-            found="y"
+                # Corrected indentation here
+                echo -e "\n✔ Directory: ${green}$child_directory_name${reset}" # Directory in green with ✔
+                echo "    - Changes:"
+                echo "        The branch '$branch_to_delete' was deleted from $deleted"
+                echo "        To $(git -C "$child_directory" remote get-url origin)"
+                echo "        - [deleted]         $branch_to_delete"  # Correct indentation
+                echo "    - Status: ${green}Branch deleted successfully${reset}"
+            fi
+        else
+            # Error occurred, print failure
+            print_failure_message "$child_directory_name" "Failed to delete remote branch. Output: $git_output"
         fi
-        if [ ! -z "$deleted" ]; then
-            echo "$deleted deleted: ${green}$child_directory_name${reset}" # display child_directory name
+    else
+        # Handle case where branch doesn't exist remotely
+        if [ -z "$exists" ]; then
+            print_failure_message "$child_directory_name" "Branch $branch_to_delete not found in this directory."
         fi
     fi
 done
 
-if [ -z "$found" ]; then
-    echo "Branch not found in any repository"
-fi
+kill $!
+
+# Ensure the spinner is stopped after the final fetch
+endspin

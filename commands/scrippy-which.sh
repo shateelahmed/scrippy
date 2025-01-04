@@ -1,7 +1,6 @@
 #!/bin/bash
 
-script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
-
+script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")"
 # Convert long options to short ones
 for arg in "$@"; do
     shift
@@ -24,11 +23,9 @@ while getopts "d:" opt; do
     esac
 done
 
-source $script_location/load-env.sh
-source $script_location/target-directory.sh
-source $script_location/verify-git-repo.sh
-source $script_location/directory-name.sh
-source $script_location/terminal-color-codes.sh
+for lib_file in "$script_location"/lib/*.sh; do
+    source "$lib_file"
+done
 
 # Define table headers
 header1="Directory"
@@ -37,6 +34,12 @@ header2="Current Branch"
 # Initialize arrays for dynamic width calculation
 directories=()
 branches=()
+
+
+while true; do
+    spin
+    sleep 0.1
+done &
 
 # Add Target Directory as the first row
 directories+=("Target directory")
@@ -57,6 +60,7 @@ col2_width=$((${#header2} > $(printf "%s\n" "${branches[@]}" | wc -L) ? ${#heade
 
 # Define table borders dynamically
 border_top="+$(printf -- '-%.0s' $(seq $((col1_width + 2))))+$(printf -- '-%.0s' $(seq $((col2_width + 2))))+"
+echo -e "\n"
 
 # Print the table header with borders
 printf "%s\n" "$border_top"
@@ -76,3 +80,8 @@ done
 
 # Print the bottom border
 printf "%s\n" "$border_top"
+
+# Kill the spinner once git fetch completes
+kill $!
+# Ensure the spinner is stopped after the final fetch
+endspin

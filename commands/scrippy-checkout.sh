@@ -2,7 +2,7 @@
 
 # This script checks out to a specific local branch in all directories
 
-script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
+script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")"
 
 # Convert long options to short ones
 for arg in "$@"; do
@@ -21,12 +21,8 @@ done
 while getopts "d:" opt; do
     case $opt in
     d)
-        # echo "Flag -d or --directory was triggered, Parameter: $OPTARG"
         target_directory="$OPTARG"
         ;;
-    # \?)
-    #     echo "Invalid option: -$OPTARG"
-    #     ;;
     esac
 done
 
@@ -42,38 +38,56 @@ if [ "$provided_number_of_arguments" != "$required_number_of_arguments" ]; then
     exit
 fi
 
-source $script_location/load-env.sh
-source $script_location/target-directory.sh
-source $script_location/verify-git-repo.sh
-source $script_location/directory-name.sh
-source $script_location/terminal-color-codes.sh
+for lib_file in "$script_location"/lib/*.sh; do
+    source "$lib_file"
+done
 
 branch_to_checkout="${arguments[0]}"
 
 echo "Target directory: ${green}$target_directory${reset}"
 echo "Branch to checkout: ${green}$branch_to_checkout${reset}"
 
+while true; do
+    spin
+    sleep 0.1
+done &
+
+# Iterate through directories
 for child_directory in $(ls -d $target_directory/*/); do # iterate over each directory
-    if [ ! -d "$child_directory/.git" ] \
-    || ! ( git -C "$child_directory" show-ref --quiet --heads $branch_to_checkout ); then
-        # condition 1: current child_directory is not a git repo
-        # condition 2: branch_to_checkout does not exist locally
+    child_directory_name=$(basename "$child_directory")
+    checkout_output=$(git -C "$child_directory" checkout "$branch_to_checkout" 2>&1)
 
-        continue
+    echo -e "\n"
+    if [ -n "$checkout_output" ]; then
+        # Determine the icon based on checkout success or failure
+        if echo "$checkout_output" | grep -q "error"; then
+            icon="✘"
+        else
+            icon="✔"
+        fi
+
+        echo -e "$icon  Directory: ${green}$child_directory_name${reset}"
+        echo "    - changes:"
+        echo "$checkout_output" | sed 's/^/          &/'  # Correct indentation for changes
+    else
+        echo -e "${red}✘  Directory: $child_directory_name${reset}"
+        echo "    - changes: No changes"
     fi
-
-    child_directory_name=$(get_directory_name "$child_directory")
-    echo -e "\nWorking directory ${green}$child_directory_name${reset}" # display child_directory name
 
     current_branch=$(git -C "$child_directory" branch --show-current)
     if [ "$current_branch" != "$branch_to_checkout" ]; then  # if the current git branch is not "$branch_to_checkout"
-        git -C "$child_directory" checkout $branch_to_checkout
-        current_branch=$(git -C "$child_directory" branch --show-current)
-    fi
-    if [ "$current_branch" != "$branch_to_checkout" ]; then  # if the current git branch is not "$branch_to_checkout"
-        echo "Could not checkout"
-        continue
+        echo "    - Branch: ${red}Failed to checkout${reset}"
+        echo "    - Status: ${red}Checkout failed${reset}"
+    else
+        echo "    - Branch: ${green}$current_branch${reset}"
+        echo "    - Status: ${green}Checked out successfully${reset}"
     fi
 
-    echo "Checked out"
+    echo -e "\n"
+
 done
+
+# Kill the spinner once git fetch completes
+kill $!
+# Ensure the spinner is stopped after the final fetch
+endspin

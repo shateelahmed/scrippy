@@ -1,22 +1,21 @@
 #!/bin/bash
 
-# This script runs "git pull" is each directoy residing in its parent directory (default) or in the given directory
-
-script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
+# Get the script's location
+script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")"
 
 # Convert long options to short ones
 for arg in "$@"; do
     shift
     case "$arg" in
     "--directory")
-        set -- "$@" "-d" # Convert --directory to -d
+        set -- "$@" "-d"
         ;;
     "--clear-proxy")
-        set -- "$@" "-c" # Convert --clear-proxy to -c
+        set -- "$@" "-c"
         ;;
     *)
         set -- "$@" "$arg"
-        ;; # Pass through the original argument if no match
+        ;;
     esac
 done
 
@@ -26,71 +25,102 @@ clear_proxy=false
 while getopts "d:c" opt; do
     case $opt in
     d)
-        # echo "Flag -d or --directory was triggered, Parameter: $OPTARG"
         target_directory="$OPTARG"
         ;;
     c)
         clear_proxy=true
         ;;
-    # \?)
-    #     echo "Invalid option: -$OPTARG"
-    #     ;;
     esac
 done
 
-# Shift off the options and flags, so only positional arguments remain
+# Handle positional arguments
 shift $((OPTIND - 1))
-
-# Handle positional arguments (remaining after flags)
 arguments=("$@")
 required_number_of_arguments=1
-provided_number_of_arguments=${#arguments[@]}
-if [ "$provided_number_of_arguments" != "$required_number_of_arguments" ]; then
-    echo "$required_number_of_arguments argument required. $provided_number_of_arguments provided"
-    exit
+if [ "${#arguments[@]}" -ne "$required_number_of_arguments" ]; then
+    echo "1 argument required. ${#arguments[@]} provided."
+    exit 1
 fi
 
-source $script_location/load-env.sh
-source $script_location/target-directory.sh
-source $script_location/verify-git-repo.sh
-source $script_location/directory-name.sh
-source $script_location/terminal-color-codes.sh
+# Load libraries if needed
+for lib_file in "$script_location"/lib/*.sh; do
+    source "$lib_file"
+done
 
 branch_to_pull="${arguments[0]}"
 
-echo "Target directory: ${green}$target_directory${reset}"
-echo "Branch to pull: ${green}$branch_to_pull${reset}"
-echo "Clear proxy: ${green}$clear_proxy${reset}"
+# Display initial details
+echo -e "Target directory    : ${green}${target_directory}${reset}"
+echo -e "Branch to pull      : ${green}${branch_to_pull}${reset}"
+echo -e "Clear proxy         : ${green}${clear_proxy}${reset}\n"
 
-source $script_location/clear-proxy.sh
 
-for child_directory in $(ls -d $target_directory/*/); do # iterate over each directory
+while true; do
+    spin
+    sleep 0.1
+done &
+
+# Helper function to display status
+show_status() {
+    local dir_name=$1
+    local status=$2
+    local changes=$3
+
+    if [ "$status" == "success" ]; then
+        echo -e "${green}✔ Directory: $dir_name${reset}"
+        echo -e "     - changes:"
+        echo -e "           $changes"  # Ensure proper indentation
+        echo -e "     - status: ${green}Successfully pulled ${branch_to_pull}${reset}\n\n"
+    else
+        echo -e "${red}✘ Directory: $dir_name${reset}"
+        echo -e "     - changes:"
+        echo -e "           $changes"  # Ensure proper indentation
+        echo -e "     - status: ${red}Failed to pull ${branch_to_pull}${reset}\n\n"
+    fi
+}
+
+# Iterate over each subdirectory
+for child_directory in "$target_directory"/*/; do
+    child_directory_name=$(basename "$child_directory")
+
+    # Skip if not a Git repository
     if [ ! -d "$child_directory/.git" ]; then
-        # condition 1: current child_directory is not a git repo
-
+        show_status "$child_directory_name" "failure" "Not a Git repository"
         continue
     fi
 
-    git -C "$child_directory" ls-remote --exit-code --heads origin $branch_to_pull &> /dev/null # check if remote branch exists and set exit code to status variable "$?"
-    exit_code="$?"
-    if [ "$exit_code" != "0" ]; then # 0 = exists, 2 = does not exist
+    # Check if the branch exists remotely
+    git -C "$child_directory" ls-remote --heads origin "$branch_to_pull" &>/dev/null
+    if [ $? -ne 0 ]; then
+        show_status "$child_directory_name" "failure" "Branch ${branch_to_pull} not found on remote"
         continue
     fi
 
-    child_directory_name=$(get_directory_name "$child_directory")
-    echo -e "\nWorking directory in ${green}$child_directory_name${reset}" # display child_directory name
+    # Fetch updates
+    fetch_output=$(git -C "$child_directory" fetch --all --prune 2>&1)
 
-    git -C "$child_directory" fetch --all --prune
-
+    # Switch branch if needed
     current_branch=$(git -C "$child_directory" branch --show-current)
-    if [ "$current_branch" != "$branch_to_pull" ]; then  # if the current git branch is not "$branch_to_pull"
-        git -C "$child_directory" checkout $branch_to_pull
+    if [ "$current_branch" != "$branch_to_pull" ]; then
+        git -C "$child_directory" checkout "$branch_to_pull" &>/dev/null
         current_branch=$(git -C "$child_directory" branch --show-current)
     fi
-    if [ "$current_branch" != "$branch_to_pull" ]; then  # if the current git branch is not "$branch_to_pull"
-        echo "Could not checkout to $branch_to_pull. skipping..."
-        continue # continue to next child_directory as could not checkout to "$branch_to_pull"
+
+    if [ "$current_branch" != "$branch_to_pull" ]; then
+        show_status "$child_directory_name" "failure" "Failed to switch to branch ${branch_to_pull}"
+        continue
     fi
 
-    git -C "$child_directory" pull
+    # Pull changes
+    pull_output=$(git -C "$child_directory" pull 2>&1)
+    if [ $? -eq 0 ]; then
+        show_status "$child_directory_name" "success" "$pull_output"
+    else
+        show_status "$child_directory_name" "failure" "$pull_output"
+    fi
 done
+
+kill $!
+
+# Ensure the spinner is stopped after the final fetch
+endspin
