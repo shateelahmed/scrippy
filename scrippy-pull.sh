@@ -78,7 +78,7 @@ for child_directory in $(ls -d $target_directory/*/); do # iterate over each dir
     fi
 
     child_directory_name=$(get_directory_name "$child_directory")
-    echo -e "\nWorking directory in ${green}$child_directory_name${reset}" # display child_directory name
+    echo -e "\nWorking directory ${green}$child_directory_name${reset}" # display child_directory name
 
     git -C "$child_directory" fetch --all --prune
 
