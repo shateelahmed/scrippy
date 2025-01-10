@@ -2,7 +2,7 @@
 
 # This script runs "git fetch --all --prune" is each directoy residing in its parent directory (default) or in the given directory
 
-script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
+script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")"
 
 # Convert long options to short ones
 for arg in "$@"; do
@@ -30,16 +30,16 @@ while getopts "d:" opt; do
     esac
 done
 
-source $script_location/load-env.sh
-source $script_location/target-directory.sh
-source $script_location/verify-git-repo.sh
-source $script_location/directory-name.sh
-source $script_location/terminal-color-codes.sh
+source $script_location/lib/load-env.sh
+source $script_location/lib/target-directory.sh
+source $script_location/lib/verify-git-repo.sh
+source $script_location/lib/directory-name.sh
+source $script_location/lib/terminal-color-codes.sh
 
 echo "Target directory: ${green}$target_directory${reset}"
 echo "Clear proxy: ${green}$clear_proxy${reset}"
 
-source $script_location/clear-proxy.sh
+source $script_location/lib/clear-proxy.sh
 
 for child_directory in $(ls -d $target_directory/*/); do # iterate over each directory
     if [ ! -d "$child_directory/.git" ]; then

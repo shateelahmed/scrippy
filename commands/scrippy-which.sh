@@ -1,6 +1,6 @@
 #!/bin/bash
 
-script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
+script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")"
 
 # Convert long options to short ones
 for arg in "$@"; do
@@ -28,13 +28,14 @@ while getopts "d:" opt; do
     esac
 done
 
-source $script_location/load-env.sh
-source $script_location/target-directory.sh
-source $script_location/verify-git-repo.sh
-source $script_location/directory-name.sh
-source $script_location/terminal-color-codes.sh
+source $script_location/lib/load-env.sh
+source $script_location/lib/target-directory.sh
+source $script_location/lib/verify-git-repo.sh
+source $script_location/lib/directory-name.sh
+source $script_location/lib/terminal-color-codes.sh
 
 echo "Target directory: $target_directory"
+# exit
 
 # Iterate over immediate child directories
 for child_directory in $(ls -d $target_directory/*/); do # iterate over each directory

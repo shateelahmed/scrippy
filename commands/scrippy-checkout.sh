@@ -2,7 +2,7 @@
 
 # This script checks out to a specific local branch in all directories
 
-script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
+script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")"
 
 # Convert long options to short ones
 for arg in "$@"; do
@@ -42,11 +42,11 @@ if [ "$provided_number_of_arguments" != "$required_number_of_arguments" ]; then
     exit
 fi
 
-source $script_location/load-env.sh
-source $script_location/target-directory.sh
-source $script_location/verify-git-repo.sh
-source $script_location/directory-name.sh
-source $script_location/terminal-color-codes.sh
+source $script_location/lib/load-env.sh
+source $script_location/lib/target-directory.sh
+source $script_location/lib/verify-git-repo.sh
+source $script_location/lib/directory-name.sh
+source $script_location/lib/terminal-color-codes.sh
 
 branch_to_checkout="${arguments[0]}"
 

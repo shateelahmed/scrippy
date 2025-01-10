@@ -10,29 +10,35 @@ install_unix() {
         exit 1
     fi
 
-    # Define install directory in the user's home directory
-    install_dir="$HOME/.scrippy"
+    # Define installation directory in the user's home directory
+    installation_directory="$HOME/.scrippy"
+    # Define the commands directory in the user's home directory
+    commands_directory="$installation_directory/commands"
+
+    # Remove the installation directory if it exists
+    rm -rf "$installation_directory"
 
     # Create the directory if it doesn't exist
-    mkdir -p "$install_dir"
+    mkdir -p "$installation_directory"
 
-    # Copy scripts to the install directory
-    rsync -av --exclude '.git/' --exclude '.gitignore' . "$install_dir" # copy all files to the install directory
-    chmod +x "$install_dir"/scrippy*.sh # Make the scrippy prefixed scripts executable
+    # Copy scripts to the installation directory
+    rsync -av --exclude '.git/' --exclude '.gitignore' . "$installation_directory" # copy all files to the installation directory
+
+    chmod +x "$commands_directory"/scrippy*.sh # Make the scrippy prefixed scripts executable
 
     # for file in scrippy*.sh; do mv "$file" "scrippy${file#bulk-git}"; done
-    for file in "$install_dir"/scrippy*.sh; do
+    for file in "$commands_directory"/scrippy*.sh; do
         mv "$file" "${file%.sh}"
     done
 
-    # Add the install directory to PATH if it's not already there
+    # Add the installation directory to PATH if it's not already there
     default_shell="$(basename $SHELL)"
     shell_config="$HOME/.${default_shell}rc"  # Modify based on the user's shell (e.g., .zshrc for zsh)
-    if ! grep -q "$install_dir" "$shell_config"; then
-        echo "export PATH=\"\$PATH:$install_dir\"" >> "$shell_config"
-        echo "Added $install_dir to PATH in $shell_config. Please restart your terminal or source the file to use the scripts."
+    if ! grep -q "$commands_directory" "$shell_config"; then
+        echo "export PATH=\"\$PATH:$commands_directory\"" >> "$shell_config"
+        echo "Added $commands_directory to PATH in $shell_config. Please restart your terminal or source the file to use the scripts."
     else
-        echo "$install_dir is already in PATH."
+        echo "$commands_directory is already in PATH."
     fi
 
     echo "Installation complete. You can run the scripts globally after restarting your terminal or running 'source $shell_config'."

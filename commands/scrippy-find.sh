@@ -2,7 +2,7 @@
 
 # Find a branch in remote and local repository
 
-script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
+script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")"
 
 # Convert long options to short ones
 for arg in "$@"; do
@@ -50,11 +50,11 @@ if [ "$provided_number_of_arguments" != "$required_number_of_arguments" ]; then
     exit
 fi
 
-source $script_location/load-env.sh
-source $script_location/target-directory.sh
-source $script_location/verify-git-repo.sh
-source $script_location/directory-name.sh
-source $script_location/terminal-color-codes.sh
+source $script_location/lib/load-env.sh
+source $script_location/lib/target-directory.sh
+source $script_location/lib/verify-git-repo.sh
+source $script_location/lib/directory-name.sh
+source $script_location/lib/terminal-color-codes.sh
 
 branch_to_find="${arguments[0]}"
 
@@ -62,7 +62,7 @@ echo "Target directory: ${green}$target_directory${reset}"
 echo "Branch to find: ${green}$branch_to_find${reset}"
 echo -e "Clear proxy: ${green}$clear_proxy${reset}\n"
 
-source $script_location/clear-proxy.sh
+source $script_location/lib/clear-proxy.sh
 
 found="" # flag to check if branch is found in any child_directory of the $target_directory
 
