@@ -28,24 +28,60 @@ while getopts "d:" opt; do
     esac
 done
 
-source $script_location/lib/load-env.sh
-source $script_location/lib/target-directory.sh
-source $script_location/lib/verify-git-repo.sh
-source $script_location/lib/directory-name.sh
-source $script_location/lib/terminal-color-codes.sh
+for lib_file in "$script_location"/lib/*.sh; do
+    source "$lib_file"
+done
 
-echo "Target directory: $target_directory"
-# exit
+# Define table headers
+column1="Directory"
+column2="Current Branch"
 
-# Iterate over immediate child directories
+# Initialize arrays for dynamic width calculation
+directories=()
+branches=()
+
+
+spin &
+SPINNER_PID=$!
+
+# Add Target Directory as the first row
+directories+=("Target directory")
+branches+=("$target_directory")
+
+# Collect data for directories and branches
 for child_directory in $(ls -d $target_directory/*/); do # iterate over each directory
     if ! is_git_repo "$child_directory"; then
-        # condition 1: current child_directory is not a git repo
-
         continue
     fi
-
-    child_directory_name=$(get_directory_name "$child_directory")
-    current_branch=$(git -C "$child_directory" branch --show-current)
-    echo "$child_directory_name - ${green}$current_branch${reset}"
+    directories+=("$(get_directory_name "$child_directory")")
+    branches+=("$(git -C "$child_directory" branch --show-current)")
 done
+
+endspin
+
+# Determine dynamic column widths
+col1_width=$((${#column1} > $(printf "%s\n" "${directories[@]}" | wc -L) ? ${#column1} : $(printf "%s\n" "${directories[@]}" | wc -L)))
+col2_width=$((${#column2} > $(printf "%s\n" "${branches[@]}" | wc -L) ? ${#column2} : $(printf "%s\n" "${branches[@]}" | wc -L)))
+
+# Define table borders dynamically
+border_top="+$(printf -- '-%.0s' $(seq $((col1_width + 2))))+$(printf -- '-%.0s' $(seq $((col2_width + 2))))+"
+echo -e "\n"
+
+# Print the table header with borders
+printf "%s\n" "$border_top"
+printf "| %-*s | %-*s |\n" "$col1_width" "$column1" "$col2_width" "$column2"
+printf "%s\n" "$border_top"
+
+# Print the rows dynamically with color for the target directory
+for i in "${!directories[@]}"; do
+    dir_name="${directories[$i]}"
+    branch_name="${branches[$i]}"
+    if [ "$i" -eq 0 ]; then
+        printf "| ${yellow}%-*s${reset} | ${green}%-*s${reset} |\n" "$col1_width" "$dir_name" "$col2_width" "$branch_name"
+    else
+        printf "| %-*s | ${green}%-*s${reset} |\n" "$col1_width" "$dir_name" "$col2_width" "$branch_name"
+    fi
+done
+
+# Print the bottom border
+printf "%s\n" "$border_top"

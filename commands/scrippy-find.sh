@@ -50,53 +50,86 @@ if [ "$provided_number_of_arguments" != "$required_number_of_arguments" ]; then
     exit
 fi
 
-source $script_location/lib/load-env.sh
-source $script_location/lib/target-directory.sh
-source $script_location/lib/verify-git-repo.sh
-source $script_location/lib/directory-name.sh
-source $script_location/lib/terminal-color-codes.sh
+for lib_file in "$script_location"/lib/*.sh; do
+    source "$lib_file"
+done
 
 branch_to_find="${arguments[0]}"
 
-echo "Target directory: ${green}$target_directory${reset}"
-echo "Branch to find: ${green}$branch_to_find${reset}"
-echo -e "Clear proxy: ${green}$clear_proxy${reset}\n"
+echo -e "Target directory           : ${green}$target_directory${reset}"
+echo -e "Branch to find             : ${green}$branch_to_find${reset}"
+echo -e "Clear proxy                : ${green}$clear_proxy${reset}"
 
-source $script_location/lib/clear-proxy.sh
+# Initialize dynamic arrays for the table
+directories=()
+local_status=()
+remote_status=()
 
-found="" # flag to check if branch is found in any child_directory of the $target_directory
 
-for child_directory in $(ls -d $target_directory/*/); do # iterate over each directory
+function strip_color {
+    echo -e "$1" | sed -r 's/\x1B\[[0-9;]*m//g'
+}
+
+spin &
+SPINNER_PID=$!
+
+
+
+# Collect data for directories, local status, and remote status
+for child_directory in $(ls -d $target_directory/*/); do
     if [ ! -d "$child_directory/.git" ]; then
-        # condition 1: current child_directory is not a git repo
-
         continue
     fi
 
-    exists="" # flag to check if branch exists locally and/or remotely
-    if git -C "$child_directory" show-ref --quiet --heads $branch_to_find; then # Check if branch exists locally
-        exists+="local"
+    # Check if the branch exists locally
+    if git -C "$child_directory" show-ref --quiet --heads $branch_to_find; then
+        # exists+="${green}  ✔ ${reset}"
+        local_status+=("${green}  ✔  ${reset}")
+    else
+        # exists+="${red}  ✘ ${reset}"
+        local_status+=("${red}  ✘  ${reset}")
     fi
 
-    git -C "$child_directory" ls-remote --exit-code --heads origin $branch_to_find &> /dev/null # check if remote branch exists and set exit code to status variable "$?"
-    exit_code="$?"
-    if [ "$exit_code" == "0" ]; then # 0 = exists, 2 = does not exist
-        if [ ! -z "$exists" ]; then
-            exists+=" & "
-        fi
-        exists+="remote"
+    # Check if the branch exists remotely
+    git -C "$child_directory" ls-remote --exit-code --heads origin $branch_to_find &> /dev/null
+    if [ "$?" == "0" ]; then
+        remote_status+=("${green}  ✔   ${reset}")
+    else
+        remote_status+=("${red}  ✘   ${reset}")
     fi
 
-    if [ ! -z "$exists" ]; then
-        if [ -z "$found" ]; then
-            found="y"
-        fi
-
-        child_directory_name=$(get_directory_name "$child_directory")
-        echo "$exists: ${green}$child_directory_name${reset}" # display child_directory name
-    fi
+    child_directory_name=$(get_directory_name "$child_directory")
+    directories+=("$child_directory_name")
 done
 
-if [ -z "$found" ]; then
-    echo "Branch not found in any repo"
-fi
+# Define table headers
+header1="Directory"
+header2="Local"
+header3="Remote"
+
+endspin
+
+col1_width=$((${#header1} > $(printf "%s\n" "${directories[@]}" | wc -L) ? ${#header1} : $(printf "%s\n" "${directories[@]}" | wc -L)))
+col2_width=$((${#header2} > $(printf "%s\n" "$(printf "%s\n" "${local_status[@]}" | while read line; do strip_color "$line"; done)" | wc -L) ? ${#header2} : $(printf "%s\n" "${local_status[@]}" | while read line; do strip_color "$line"; done | wc -L)))
+col3_width=$((${#header3} > $(printf "%s\n" "$(printf "%s\n" "${remote_status[@]}" | while read line; do strip_color "$line"; done)" | wc -L) ? ${#header3} : $(printf "%s\n" "${remote_status[@]}" | while read line; do strip_color "$line"; done | wc -L)))
+
+
+# Define table borders dynamically
+border_top="+$(printf -- '-%.0s' $(seq $((col1_width + 2))))+$(printf -- '-%.0s' $(seq $((col2_width))))+$(printf -- '-%.0s' $(seq $((col3_width))))+"
+echo -e "\n"
+
+# Print the table header with borders
+printf "%s\n" "$border_top"
+printf "| %-*s | %-*s | %-*s |\n" "$col1_width" "$header1" "" "$header2" "" "$header3"
+printf "%s\n" "$border_top"
+
+# Print the rows dynamically
+for i in "${!directories[@]}"; do
+    dir_name="${directories[$i]}"
+    local_check="${local_status[$i]}"
+    remote_check="${remote_status[$i]}"
+    printf "| %-*s | %-*s | %-*s |\n" "$col1_width" "$dir_name" "$col2_width" "$local_check" "$col3_width" "$remote_check"
+done
+
+# Print the bottom border
+printf "%s\n" "$border_top"
