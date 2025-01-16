@@ -30,3 +30,44 @@ Checkout the following scenario. You have a project `amazing` that contains 10 m
 - Run `scrippy pull <branch_name>` to pull a branch. The pull will always happen in the same branch.
 - Run `scrippy push <branch_name>` to push a branch. The push will always happen in the same branch.
 - Run `scrippy which` to list the branches that are currently checked out
+
+
+## Example output
+<br>**scrippy which :**
+<br><b>Description:</b>
+Displays the current branch that each directory (cool) is checked out to. This is particularly useful for keeping track of the branch status across multiple repositories.
+
+<b>Output Example Explanation:</b>
+A table is shown with directories and the branches currently checked out in each directory. This helps you quickly understand the state of your microservices.
+
+    +---------------------+----------------------------------------+
+    | Directory           | Current Branch                         |
+    +---------------------+----------------------------------------+
+    | Target directory    | /home/users/Documents/application/dev  |
+    | cool                | master                                 |
+    | amazing             | develop                                |
+    | awesome             | develop                                |
+    +---------------------+----------------------------------------+```
+
+
+<br>**scrippy find <branch_name> :**
+<br><b>Description:</b>
+Searches for a specific branch across all microservices. It indicates whether the branch exists locally, remotely, or not at all.
+
+<b>Output Example Explanation:</b>
+The command highlights whether the specified branch (develop in this case) exists locally and/or remotely for each microservice directory.
+
+    Target directory           : /home/users/Documents/application/dev
+    Branch to find             : develop
+    Clear proxy                : false
+
+
+    +---------------------+-------+--------+
+    | Directory           | Local | Remote |
+    +---------------------+-------+--------+
+    | cool                |   ✔   |   ✘    |
+    | amazing             |   ✔   |   ✔    |
+    | awesome             |   ✔   |   ✔    |
+    +---------------------+-------+--------+
+    ✔ (Green): The branch exists locally and/or remotely.
+    ✘ (Red): The branch does not exist locally or remotely.
