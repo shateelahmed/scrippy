@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script runs "git pull" is each directoy residing in its parent directory (default) or in the given directory
+# This script runs "git pull" is each directory residing in its parent directory (default) or in the given directory
 
 script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")"
 

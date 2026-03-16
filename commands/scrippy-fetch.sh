@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script runs "git fetch --all --prune" is each directoy residing in its parent directory (default) or in the given directory
+# This script runs "git fetch --all --prune" is each directory residing in its parent directory (default) or in the given directory
 
 script_location="$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")"
 
