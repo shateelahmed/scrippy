@@ -46,6 +46,7 @@ source $script_location/lib/load-env.sh
 source $script_location/lib/target-directory.sh
 source $script_location/lib/verify-git-repo.sh
 source $script_location/lib/directory-name.sh
+source $script_location/lib/skip-directory.sh
 source $script_location/lib/terminal-color-codes.sh
 
 branch_to_checkout="${arguments[0]}"
@@ -54,6 +55,10 @@ echo "Target directory: ${green}$target_directory${reset}"
 echo "Branch to checkout: ${green}$branch_to_checkout${reset}"
 
 for child_directory in $(ls -d $target_directory/*/); do # iterate over each directory
+    if is_skipped_directory "$child_directory"; then # skip directories listed in SKIP_DIRS
+        continue
+    fi
+
     if [ ! -d "$child_directory/.git" ] \
     || ! ( git -C "$child_directory" show-ref --quiet --heads $branch_to_checkout ); then
         # condition 1: current child_directory is not a git repo

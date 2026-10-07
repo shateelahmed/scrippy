@@ -61,6 +61,7 @@ source $script_location/lib/load-env.sh
 source $script_location/lib/target-directory.sh
 source $script_location/lib/verify-git-repo.sh
 source $script_location/lib/directory-name.sh
+source $script_location/lib/skip-directory.sh
 source $script_location/lib/terminal-color-codes.sh
 
 branch_to_delete="${arguments[0]}"
@@ -75,6 +76,10 @@ source $script_location/lib/clear-proxy.sh
 found="" # flag to check if branch is found in any child_directory of the $target_directory
 
 for child_directory in $(ls -d $target_directory/*/); do # iterate over each directory
+    if is_skipped_directory "$child_directory"; then # skip directories listed in SKIP_DIRS
+        continue
+    fi
+
     if [ ! -d "$child_directory/.git" ]; then
         # condition 1: current child_directory is not a git repo
 

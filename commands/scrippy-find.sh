@@ -77,6 +77,10 @@ SPINNER_PID=$!
 
 # Collect data for directories, local status, and remote status
 for child_directory in $(ls -d $target_directory/*/); do
+    if is_skipped_directory "$child_directory"; then # skip directories listed in SKIP_DIRS
+        continue
+    fi
+
     if [ ! -d "$child_directory/.git" ]; then
         continue
     fi

@@ -18,6 +18,7 @@ Checkout the following scenario. You have a project `amazing` that contains 10 m
 - Update the envs to your need in the `.env` file.
     - `TARGET_DIR`: Set absolute path to the directory where you want to run scrippy in by default.
     - `DEFAULT_BRANCH`: Set default branch (eg. `master`, `main`) for your repository.
+    - `SKIP_DIRS`: Comma and/or space separated list of directory names to skip in all commands (eg. `archived, playground`).
 - Make the `install.sh` file executable (`chmod +x <filename>.sh`).
 - Run `./install.sh` to install the scripts
 

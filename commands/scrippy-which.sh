@@ -50,6 +50,10 @@ branches+=("$target_directory")
 
 # Collect data for directories and branches
 for child_directory in $(ls -d $target_directory/*/); do # iterate over each directory
+    if is_skipped_directory "$child_directory"; then # skip directories listed in SKIP_DIRS
+        continue
+    fi
+
     if ! is_git_repo "$child_directory"; then
         continue
     fi

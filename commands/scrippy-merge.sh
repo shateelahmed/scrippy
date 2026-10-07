@@ -54,6 +54,7 @@ source $script_location/lib/load-env.sh
 source $script_location/lib/target-directory.sh
 source $script_location/lib/verify-git-repo.sh
 source $script_location/lib/directory-name.sh
+source $script_location/lib/skip-directory.sh
 source $script_location/lib/terminal-color-codes.sh
 
 source_branch="${arguments[0]}"
@@ -67,6 +68,10 @@ echo "Clear proxy: ${green}$clear_proxy${reset}"
 source $script_location/lib/clear-proxy.sh
 
 for child_directory in $(ls -d $target_directory/*/); do # iterate over each directory
+    if is_skipped_directory "$child_directory"; then # skip directories listed in SKIP_DIRS
+        continue
+    fi
+
     if [ ! -d "$child_directory/.git" ] \
     || ! ( git -C "$child_directory" show-ref --quiet --heads $source_branch ) \
     || ! ( git -C "$child_directory" show-ref --quiet --heads $target_branch ); then
