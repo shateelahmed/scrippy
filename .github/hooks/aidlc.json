@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "bash": "aidlc engine adapter copilot session-start",
+        "powershell": "aidlc engine adapter copilot session-start",
+        "timeoutSec": 30
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "type": "command",
+        "bash": "aidlc engine adapter copilot record-human-turn",
+        "powershell": "aidlc engine adapter copilot record-human-turn",
+        "timeoutSec": 30
+      }
+    ],
+    "PreToolUse": [
+      {
+        "type": "command",
+        "bash": "aidlc engine adapter copilot guard-tool-call",
+        "powershell": "aidlc engine adapter copilot guard-tool-call",
+        "timeoutSec": 30
+      }
+    ],
+    "PostToolUse": [
+      {
+        "type": "command",
+        "bash": "aidlc engine adapter copilot post-tool",
+        "powershell": "aidlc engine adapter copilot post-tool",
+        "timeoutSec": 30
+      }
+    ],
+    "PreCompact": [
+      {
+        "type": "command",
+        "bash": "aidlc engine adapter copilot validate-state",
+        "powershell": "aidlc engine adapter copilot validate-state",
+        "timeoutSec": 30
+      }
+    ],
+    "SubagentStart": [
+      {
+        "type": "command",
+        "bash": "aidlc engine adapter copilot subagent-start",
+        "powershell": "aidlc engine adapter copilot subagent-start",
+        "timeoutSec": 30
+      }
+    ],
+    "SubagentStop": [
+      {
+        "type": "command",
+        "bash": "aidlc engine adapter copilot log-subagent",
+        "powershell": "aidlc engine adapter copilot log-subagent",
+        "timeoutSec": 30
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "bash": "aidlc engine adapter copilot continue-workflow",
+        "powershell": "aidlc engine adapter copilot continue-workflow",
+        "timeoutSec": 60
+      }
+    ]
+  }
+}
